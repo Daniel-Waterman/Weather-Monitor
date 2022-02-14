@@ -1,7 +1,135 @@
 ﻿@page "/"
+@using System
+@using BlazorApp.Shared
+@inject HttpClient _client
 
 <PageTitle>SS6 Weather</PageTitle>
 
-<h1>Current Weather Conditions</h1>
+<h1>Current Conditions Dashboard</h1>
+
+<h6>Update Time: @updateTime</h6>
+
+
+
+<div class="container-lg">
+    @if (weatherData.MainRecordTime != null)
+    {
+        <div class="row">
+            <div class="col"/>
+            <div class="col">
+                <b>Live Conditions</b>
+            </div>
+            <div class="col">
+                <b>Extremes (Since 12AM today)</b>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <i class="fa-solid fa-temperature-half" aria-hidden="true"/>
+                Temperature    
+            </div>
+            <div class="col">
+                @GetDisplayFloat(weatherData.Temperature, 1) °C
+            </div>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <i class="fa-solid fa-droplet" aria-hidden="true"/>
+                Humidity
+            </div>
+            <div class="col">
+                @GetDisplayFloat(weatherData.Humidity, 0) %
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <i class="fa-solid fa-droplet" aria-hidden="true"/>
+                Dew Point
+            </div>
+            <div class="col">
+                @GetDisplayFloat(weatherData.DewPoint, 1) °C
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <i class="fa-solid fa-gauge-simple" aria-hidden="true"/>
+                Pressure
+            </div>
+            <div class="col">
+                @GetDisplayFloat(weatherData.SeaLevelPressure, 1) hPa
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <i class="fa-solid fa-wind" aria-hidden="true"/>
+                Wind
+            </div>
+            <div class="col">
+                <div class="hstack gap-3 d-flex justify-content-between">
+                    <div>Minute Average</div>
+                    <div>@GetDisplayFloat(weatherData.AvgWindSpeed, 1) kph</div>
+                </div>
+                <div class="hstack gap-3 d-flex justify-content-between">
+                    <div>Gusting To</div>
+                    <div>@GetDisplayFloat(weatherData.GustWindSpeed, 1) kph</div>
+                </div>
+                <div class="hstack gap-3 d-flex justify-content-between">
+                    <div>Direction</div>
+                    <div>@weatherData.WindDirection °</div>
+                </div>
+            </div>
+        </div> 
+        <div class="row">
+            <div class="col">
+                <i class="fa-solid fa-cloud-rain" aria-hidden="true"/>
+                Rain
+            </div>
+            <div class="col">
+                <h3>WIP</h3>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p><em>Dashboard Loading...</em></p>
+    }
+</div>
+
+
+
+@code{
+    private SingleWeatherData weatherData = new();
+    private SingleWeatherData[] weatherRecords = new SingleWeatherData[] { };
+    private DateTime? mostRecentUpdateTime;
+    private string updateTime => mostRecentUpdateTime?.ToString("dd/MM/yyyy HH:mm") ?? "Not Found";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            weatherData = await _client.GetFromJsonAsync<SingleWeatherData>("/api/GetLatestData") ?? new SingleWeatherData();
+            mostRecentUpdateTime = weatherData.MainRecordTime;
+        }
+        catch (Exception ex)
+        {
+
+        }
+    }
+
+    private string GetDisplayFloat(float value, int decimalPlaces)
+    {
+        if (value == -99)
+        {
+            return "No Data";
+        }
+        else
+        {
+            return Math.Round(value, decimalPlaces).ToString();
+        }
+    }
+}
 
 
