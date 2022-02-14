@@ -2,6 +2,10 @@
 }
 
 
-.icon-column{
-    width: 100px;
+.row-colour-one {
+    background-color: lightgray;
+}
+
+.row-colour-two {
+    background-color: darkgray;
 }
