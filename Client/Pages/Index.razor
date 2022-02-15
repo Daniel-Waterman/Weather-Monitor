@@ -11,8 +11,8 @@
 
 
 
-<div class="container">
-    @if (weatherRecords.Count > 0)
+<div class="container-fluid">
+    @if (weatherData != null)
     {
         <div class="row row-colour-one">
             <div class="col"/>
@@ -82,37 +82,57 @@
                 Wind
             </div>
             <div class="col">
-                <div class="hstack gap-1 d-flex justify-content-between">
-                    <div>Minute Average</div>
+                <div class="hstack">
+                    <div class="w-50">Minute Average</div>
                     <div>@GetDisplayFloat(weatherData.AvgWindSpeed, 1) kph</div>
                 </div>
-                <div class="hstack gap-1 d-flex justify-content-between">
-                    <div>Gusting To</div>
+                <div class="hstack">
+                    <div class="w-50">Gusting To</div>
                     <div>@GetDisplayFloat(weatherData.GustWindSpeed, 1) kph</div>
                 </div>
-                <div class="hstack gap-1 d-flex justify-content-between">
-                    <div>Direction</div>
+                <div class="hstack">
+                    <div class="w-50">Direction</div>
                     <div>@weatherData.WindDirection °</div>
                 </div>
             </div>
             <div class="col">
-                <div class="hstack gap-1 d-flex justify-content-between">
-                    <div>Max Minute Average</div>
+                <div class="hstack">
+                    <div class="w-50">Max Minute Average</div>
                     <div>@GetDisplayFloat(extremeRecords.maxAvgWind, 1) kph (@extremeRecords.maxAvgWindTime.ToShortTimeString())</div>
                 </div>
-                <div class="hstack gap-1 d-flex justify-content-between">
-                    <div>Max Gust Speed</div>
+                <div class="hstack">
+                    <div class="w-50">Max Gust Speed</div>
                     <div>@GetDisplayFloat(extremeRecords.maxGustWind, 1) kph (@extremeRecords.maxGustWindTime.ToShortTimeString())</div>
                 </div>
             </div>
         </div> 
-        <div class="row">
+        <div class="row row-colour-one">
             <div class="col">
                 <i class="fa-solid fa-cloud-rain" aria-hidden="true"/>
                 Rain
             </div>
             <div class="col">
-                <h3>WIP</h3>
+                <div class="hstack">
+                    <div class="w-50">Last Hour</div>
+                    <div>@GetDisplayFloat(weatherData.RainfallTotal, 1) mm</div>
+                </div>
+                <div class="hstack">
+                    <div class="w-50">Rain Rate</div>
+                    <div>@GetDisplayFloat(weatherData.RainfallRate, 1) mm/hr</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="hstack">
+                    <div class="w-50">Max Rain Rate</div>
+                    @if (@extremeRecords.maxRainRate == 0)
+                    {
+                        <div>0 mm/hr (N/A)</div>
+                    }
+                    else
+                    {
+                        <div>@GetDisplayFloat(extremeRecords.maxRainRate, 1) mm/hr (@extremeRecords.maxRainRateTime.ToShortTimeString())</div>
+                    }
+                </div>
             </div>
         </div>
     }
@@ -125,18 +145,17 @@
 
 
 @code{
-    private WeatherRecord weatherData = new();
+    private WeatherRecord? weatherData;
     private List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
     private HistoricalRecordData extremeRecords = new HistoricalRecordData();
-    private string updateTime => weatherData.RecordTime.ToString("dd/MM/yyyy HH:mm") ?? "Not Found";
+    private string updateTime => weatherData?.RecordTime.ToString("dd/MM/yyyy HH:mm") ?? "Not Found";
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            weatherRecords = await _client.GetFromJsonAsync<List<WeatherRecord>>("/api/GetDailyData") ?? new List<WeatherRecord>();
-            getMostRecentData();
-            extremeRecords.NewData(weatherRecords);
+            weatherData = await _client.GetFromJsonAsync<WeatherRecord>("/api/GetMostRecent") ?? new WeatherRecord();
+            GetHistoricData(); // Not awaiting this because it is to load data in the background
         }
         catch (Exception ex)
         {
@@ -144,32 +163,30 @@
         }
     }
 
-    private void getMostRecentData()
+    private async Task GetHistoricData()
     {
-        int fieldsFilled = 0;
-        int index = 0;
-        weatherData.RecordTime = weatherRecords[0].RecordTime;
-        do
+        try
         {
-            WeatherRecord currentRecord = weatherRecords[index];
-            if (weatherData.Temperature == -99) { weatherData.Temperature = currentRecord.Temperature; fieldsFilled++; }
-            if (weatherData.Humidity == -99) { weatherData.Humidity = currentRecord.Humidity; fieldsFilled++; }
-            if (weatherData.DewPoint == -99) { weatherData.DewPoint = currentRecord.DewPoint; fieldsFilled++; }
-            if (weatherData.StationPressure == -99) { weatherData.StationPressure = currentRecord.StationPressure; fieldsFilled++; }
-            if (weatherData.SeaLevelPressure == -99) { weatherData.SeaLevelPressure = currentRecord.SeaLevelPressure; fieldsFilled++; }
-            if (weatherData.AvgWindSpeed == -99) { weatherData.AvgWindSpeed = currentRecord.AvgWindSpeed; fieldsFilled++; }
-            if (weatherData.GustWindSpeed == -99) { weatherData.GustWindSpeed = currentRecord.GustWindSpeed; fieldsFilled++; }
-            if (weatherData.WindDirection == -99) { weatherData.WindDirection = currentRecord.WindDirection; fieldsFilled++; }
-            if (weatherData.RainfallTotal == -99) { weatherData.RainfallTotal = currentRecord.RainfallTotal; fieldsFilled++; }
-            if (weatherData.RainfallRate == -99) { weatherData.RainfallRate = currentRecord.RainfallRate; fieldsFilled++; }
-            index++;
+            weatherRecords = await _client.GetFromJsonAsync<List<WeatherRecord>>("/api/GetDailyData") ?? new List<WeatherRecord>();
+            extremeRecords.NewData(weatherRecords);
+
+            // Work out total rain in last hour, as total rain for previous minute is not helpful
+            weatherData.RainfallTotal = 0; //Zero out total for last minute, so to add total for last hour below
+            DateTime previousHourStart = DateTime.Now.AddHours(-1);
+            int index = 0;
+            while (weatherRecords[index].RecordTime > previousHourStart && weatherRecords[index].RainfallTotal != -99)
+            {
+                weatherData.RainfallTotal += weatherRecords[index].RainfallTotal;
+                index++;
+            }
+            StateHasChanged();
         }
-        while (fieldsFilled < 10);
+        catch (Exception ex) { } 
     }
 
     private string GetDisplayFloat(float value, int decimalPlaces)
     {
-        if (value == -99)
+        if (value == -99 || value == 2000) // Default values
         {
             return "No Data";
         }

@@ -20,49 +20,61 @@ namespace BlazorApp.Client
         {
             foreach (WeatherRecord record in data)
             {
-                if (record.Temperature != -99 && record.Temperature > TemperatureMaxMin.MaxValue)
+                if (record.Temperature != -99)
                 {
-                    TemperatureMaxMin.MaxValue = record.Temperature;
-                    TemperatureMaxMin.MaxValueTime = record.RecordTime;
-                }
-                if (record.Temperature != -99 && record.Temperature < TemperatureMaxMin.MinValue)
-                {
-                    TemperatureMaxMin.MinValue = record.Temperature;
-                    TemperatureMaxMin.MinValueTime = record.RecordTime;
-                }
-
-                if (record.Humidity != -99 && record.Humidity > HumidityMaxMin.MaxValue)
-                {
-                    HumidityMaxMin.MaxValue = record.Humidity;
-                    HumidityMaxMin.MaxValueTime = record.RecordTime;
-                }
-                if (record.Humidity != -99 && record.Humidity < HumidityMaxMin.MinValue)
-                {
-                    HumidityMaxMin.MinValue = record.Humidity;
-                    HumidityMaxMin.MinValueTime = record.RecordTime;
+                    if (record.Temperature > TemperatureMaxMin.MaxValue)
+                    {
+                        TemperatureMaxMin.MaxValue = record.Temperature;
+                        TemperatureMaxMin.MaxValueTime = record.RecordTime;
+                    }
+                    if (record.Temperature < TemperatureMaxMin.MinValue)
+                    {
+                        TemperatureMaxMin.MinValue = record.Temperature;
+                        TemperatureMaxMin.MinValueTime = record.RecordTime;
+                    }
                 }
 
-                if (record.DewPoint != -99 && record.DewPoint > DewPointMaxMin.MaxValue)
+                if (record.Humidity != -99)
                 {
-                    DewPointMaxMin.MaxValue = record.DewPoint;
-                    DewPointMaxMin.MaxValueTime = record.RecordTime;
-                }
-                if (record.DewPoint != -99 && record.DewPoint < DewPointMaxMin.MinValue)
-                {
-                    DewPointMaxMin.MinValue = record.DewPoint;
-                    DewPointMaxMin.MinValueTime = record.RecordTime;
+                    if (record.Humidity > HumidityMaxMin.MaxValue)
+                    {
+                        HumidityMaxMin.MaxValue = record.Humidity;
+                        HumidityMaxMin.MaxValueTime = record.RecordTime;
+                    }
+                    if (record.Humidity < HumidityMaxMin.MinValue)
+                    {
+                        HumidityMaxMin.MinValue = record.Humidity;
+                        HumidityMaxMin.MinValueTime = record.RecordTime;
+                    }
                 }
 
-                if (record.SeaLevelPressure != -99 && record.SeaLevelPressure > PressureMaxMin.MaxValue)
+                if (record.DewPoint != -99)
                 {
-                    PressureMaxMin.MaxValue = record.SeaLevelPressure;
-                    PressureMaxMin.MaxValueTime = record.RecordTime;
+                    if (record.DewPoint > DewPointMaxMin.MaxValue)
+                    {
+                        DewPointMaxMin.MaxValue = record.DewPoint;
+                        DewPointMaxMin.MaxValueTime = record.RecordTime;
+                    }
+                    if (record.DewPoint < DewPointMaxMin.MinValue)
+                    {
+                        DewPointMaxMin.MinValue = record.DewPoint;
+                        DewPointMaxMin.MinValueTime = record.RecordTime;
+                    }
                 }
-                if (record.SeaLevelPressure != -99 && record.SeaLevelPressure < PressureMaxMin.MinValue)
+
+                if (record.SeaLevelPressure != -99)
                 {
-                    PressureMaxMin.MinValue = record.SeaLevelPressure;
-                    PressureMaxMin.MinValueTime = record.RecordTime;
-                }
+                    if (record.SeaLevelPressure > PressureMaxMin.MaxValue)
+                    {
+                        PressureMaxMin.MaxValue = record.SeaLevelPressure;
+                        PressureMaxMin.MaxValueTime = record.RecordTime;
+                    }
+                    if (record.SeaLevelPressure < PressureMaxMin.MinValue)
+                    {
+                        PressureMaxMin.MinValue = record.SeaLevelPressure;
+                        PressureMaxMin.MinValueTime = record.RecordTime;
+                    }
+                }               
 
                 if (record.AvgWindSpeed != -99 && record.AvgWindSpeed > maxAvgWind)
                 {

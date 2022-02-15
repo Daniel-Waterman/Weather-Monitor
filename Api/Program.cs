@@ -14,6 +14,7 @@ namespace BlazorApp.Api
             {
                 c.BaseAddress = new Uri("https://api.thingspeak.com");
             });
+            
         }
     }
 }

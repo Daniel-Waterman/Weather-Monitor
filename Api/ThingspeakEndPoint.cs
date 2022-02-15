@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,77 +15,103 @@ using System.Threading.Tasks;
 namespace BlazorApp.Api
 {
     public class ThingspeakEndPoint
-    { 
+    {
         private readonly HttpClient _client;
+        private readonly IConfiguration _config;
 
-        public ThingspeakEndPoint(IHttpClientFactory httpClientFactory)
+        public ThingspeakEndPoint(IHttpClientFactory httpClientFactory, IConfiguration config)
         {
             _client = httpClientFactory.CreateClient("thingspeak");
+            _config = config;
+        }
+
+        [FunctionName("GetMostRecent")]
+        public async Task<IActionResult> MostRecentData(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest request)
+        {
+            string requestPrimary = $"/channels/{_config.GetValue<string>("PrimaryChannel")}/feeds/last.json?api_key={_config.GetValue<string>("PrimaryReadKey")}";
+            string requestSecondary = $"/channels/{_config.GetValue<string>("SecondaryChannel")}/feeds/last.json?api_key={_config.GetValue<string>("SecondaryReadKey")}";
+
+            Task<ThingspeakFeedModel> responsePrimary = _client.GetFromJsonAsync<ThingspeakFeedModel>(requestPrimary);
+            Task<ThingspeakFeedModel> responseSecondary = _client.GetFromJsonAsync<ThingspeakFeedModel>(requestSecondary);
+
+            WeatherRecord dataToSend = new();
+            ThingspeakFeedModel dataPrimary, dataSecondary;
+
+            try { dataPrimary = await responsePrimary; }
+            catch (Exception ex) { dataPrimary = null; }
+
+            try { dataSecondary = await responseSecondary; }
+            catch (Exception ex) { dataSecondary = null; }
+
+            if (dataPrimary != null)
+            {
+                dataToSend = fillWeatherRecordMain(dataPrimary);
+            }
+            if (dataSecondary != null)
+            {
+                if (dataSecondary.created_at == dataToSend.RecordTime)
+                {
+                    if (dataSecondary.field1 != null) dataToSend.RainfallTotal = float.Parse(dataSecondary.field1);
+                    if (dataSecondary.field2 != null) dataToSend.RainfallRate = float.Parse(dataSecondary.field2);
+                }
+                else if (dataSecondary.created_at > dataToSend.RecordTime)
+                {
+                    dataToSend = fillWeatherRecordRain(dataSecondary);
+                }
+            }
+
+            if (dataToSend.RecordTime != default(DateTime))
+            {
+                return new OkObjectResult(dataToSend);
+            }
+            else
+            {
+                return new NotFoundResult();
+            }
         }
 
         [FunctionName("GetDailyData")]
-        public async Task<IActionResult> Run(
+        public async Task<IActionResult> DailyData(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest request)
         {
-            Task<ThingSpeakRestResponseModel> responseA = Task.Run(async () =>
-            {
-                ThingSpeakRestResponseModel response;
-                try
-                {
-                    response = await _client.GetFromJsonAsync<ThingSpeakRestResponseModel>($"/channels/1646398/feeds.json?api_key=17RI7ZVUCL1DFKMR&start={DateTime.Now.Date:yyyy-MM-dd'%20'HH:mm:ss}");
-                }
-                catch (Exception ex) { response = null; }
+            string requestPrimary = $"/channels/{_config.GetValue<string>("PrimaryChannel")}/feeds.json?api_key={_config.GetValue<string>("PrimaryReadKey")}&start={DateTime.Now.Date:yyyy-MM-dd'%20'HH:mm:ss}";
+            string requestSecondary = $"/channels/{_config.GetValue<string>("SecondaryChannel")}/feeds.json?api_key={_config.GetValue<string>("SecondaryReadKey")}&start={DateTime.Now.Date:yyyy-MM-dd'%20'HH:mm:ss}";
 
-                return response;
-            });
-
-            Task<ThingSpeakRestResponseModel> responseB = Task.Run(async () =>
-            {
-                ThingSpeakRestResponseModel response;
-                try
-                {
-                    response = await _client.GetFromJsonAsync<ThingSpeakRestResponseModel>($"/channels/1646399/feeds.json?api_key=4ZFCB9F8S5XD1RM7&start={DateTime.Now.Date:yyyy-MM-dd'%20'HH:mm:ss}");
-                }
-                catch (Exception ex) { response = null; }
-
-                return response;
-            });
+            Task<ThingSpeakRestResponseModel> responsePrimary = _client.GetFromJsonAsync<ThingSpeakRestResponseModel>(requestPrimary);
+            Task<ThingSpeakRestResponseModel> responseSecondary = _client.GetFromJsonAsync<ThingSpeakRestResponseModel>(requestSecondary);
 
             List<WeatherRecord> dataToSend = new List<WeatherRecord>();
+            //ThingSpeakRestResponseModel dataPrimary, dataSecondary;
 
-            var mainData = await responseA;
-            var rainData = await responseB;
-
-            if (mainData != null)
+            try
             {
-                foreach(ThingspeakFeedModel item in mainData.feeds)
+                var dataPrimary = await responsePrimary;
+                foreach (ThingspeakFeedModel item in dataPrimary.feeds)
                 {
-                    var temp = new WeatherRecord() { RecordTime = item.created_at };
-                    if (item.field1 != null) temp.Temperature = float.Parse(item.field1);
-                    if (item.field2 != null) temp.Humidity = float.Parse(item.field2);
-                    if (item.field3 != null) temp.DewPoint = float.Parse(item.field3);
-                    if (item.field4 != null) temp.StationPressure = float.Parse(item.field4);
-                    if (item.field5 != null) temp.SeaLevelPressure = float.Parse(item.field5);
-                    if (item.field6 != null) temp.WindDirection = int.Parse(item.field6);
-                    if (item.field7 != null) temp.AvgWindSpeed = float.Parse(item.field7);
-                    if (item.field8 != null) temp.GustWindSpeed = float.Parse(item.field8);
-                    dataToSend.Add(temp);
+                    dataToSend.Add(fillWeatherRecordMain(item));
                 }
             }
-            if (rainData != null)
+            catch (Exception ex) { }
+
+            try
             {
-                foreach(var item in rainData.feeds)
+                var dataSecondary = await responseSecondary;
+                foreach (var item in dataSecondary.feeds)
                 {
                     WeatherRecord recordToEdit = dataToSend.FirstOrDefault(x => x.RecordTime == item.created_at); //There is only one possible record for each timestamp in thingspeak
                     if (recordToEdit == null)
                     {
-                        recordToEdit = new WeatherRecord() { RecordTime = item.created_at };
-                        recordToEdit.RecordTime = item.created_at;
+                        dataToSend.Add(fillWeatherRecordRain(item));
                     }
-                    if (item.field1 != null) recordToEdit.RainfallTotal = float.Parse(item.field1);
-                    if (item.field2 != null) recordToEdit.RainfallRate = float.Parse(item.field2);
+                    else
+                    {
+                        if (item.field1 != null) recordToEdit.RainfallTotal = float.Parse(item.field1);
+                        if (item.field2 != null) recordToEdit.RainfallRate = float.Parse(item.field2);
+                    }
                 }
             }
+            catch (Exception ex) { }
 
             if (dataToSend.Count > 0)
             {
@@ -95,6 +122,28 @@ namespace BlazorApp.Api
                 return new NotFoundResult();
             }
         }
+        private WeatherRecord fillWeatherRecordMain(ThingspeakFeedModel data)
+        {
+            WeatherRecord temp = new() { RecordTime = data.created_at };
+            if (data.field1 != null) temp.Temperature = float.Parse(data.field1);
+            if (data.field2 != null) temp.Humidity = float.Parse(data.field2);
+            if (data.field3 != null) temp.DewPoint = float.Parse(data.field3);
+            if (data.field4 != null) temp.StationPressure = float.Parse(data.field4);
+            if (data.field5 != null) temp.SeaLevelPressure = float.Parse(data.field5);
+            if (data.field6 != null) temp.WindDirection = int.Parse(data.field6);
+            if (data.field7 != null) temp.AvgWindSpeed = float.Parse(data.field7);
+            if (data.field8 != null) temp.GustWindSpeed = float.Parse(data.field8);
+            return temp;
+        }
+
+        private WeatherRecord fillWeatherRecordRain(ThingspeakFeedModel data)
+        {
+            WeatherRecord temp = new() { RecordTime = data.created_at };
+            if (data.field1 != null) temp.RainfallTotal = float.Parse(data.field1);
+            if (data.field2 != null) temp.RainfallRate = float.Parse(data.field2);
+            return temp;
+        }
     }
 }
+
 
