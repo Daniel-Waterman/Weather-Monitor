@@ -174,9 +174,12 @@
             weatherData.RainfallTotal = 0; //Zero out total for last minute, so to add total for last hour below
             DateTime previousHourStart = DateTime.Now.AddHours(-1);
             int index = 0;
-            while (weatherRecords[index].RecordTime > previousHourStart && weatherRecords[index].RainfallTotal != -99)
+            while (weatherRecords[index].RecordTime > previousHourStart)
             {
-                weatherData.RainfallTotal += weatherRecords[index].RainfallTotal;
+                if (weatherRecords[index].RainfallTotal != -99)
+                {
+                    weatherData.RainfallTotal += weatherRecords[index].RainfallTotal;
+                }
                 index++;
             }
             StateHasChanged();
