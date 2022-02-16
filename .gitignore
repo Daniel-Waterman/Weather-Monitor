@@ -340,4 +340,4 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/mqtt_credentials_PAkVNgU8OB0bPSMgHjcIICc.txt
+/mqtt_credentials.txt
