@@ -75,8 +75,8 @@ namespace BlazorApp.Api
         public async Task<IActionResult> DailyData(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest request)
         {
-            string requestPrimary = $"/channels/{_config.GetValue<string>("PrimaryChannel")}/feeds.json?api_key={_config.GetValue<string>("PrimaryReadKey")}&start={DateTime.Now.Date:yyyy-MM-dd'%20'HH:mm:ss}";
-            string requestSecondary = $"/channels/{_config.GetValue<string>("SecondaryChannel")}/feeds.json?api_key={_config.GetValue<string>("SecondaryReadKey")}&start={DateTime.Now.Date:yyyy-MM-dd'%20'HH:mm:ss}";
+            string requestPrimary = $"/channels/{_config.GetValue<string>("PrimaryChannel")}/feeds.json?api_key={_config.GetValue<string>("PrimaryReadKey")}&start={DateTime.UtcNow.Date:yyyy-MM-dd'%20'HH:mm:ss}";
+            string requestSecondary = $"/channels/{_config.GetValue<string>("SecondaryChannel")}/feeds.json?api_key={_config.GetValue<string>("SecondaryReadKey")}&start={DateTime.UtcNow.Date:yyyy-MM-dd'%20'HH:mm:ss}";
 
             Task<ThingSpeakRestResponseModel> responsePrimary = _client.GetFromJsonAsync<ThingSpeakRestResponseModel>(requestPrimary);
             Task<ThingSpeakRestResponseModel> responseSecondary = _client.GetFromJsonAsync<ThingSpeakRestResponseModel>(requestSecondary);
