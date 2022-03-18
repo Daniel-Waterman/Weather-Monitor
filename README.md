@@ -1,6 +1,6 @@
 # Weather Monitor
 
-### [Go to the live website](https://polite-cliff-0854ace03.1.azurestaticapps.net) 
+### [Go to the live website](https://agreeable-water-00cb02803.1.azurestaticapps.net) 
 
 This is a web app that displays the latest data from my home-made weather station. My weather station uploads data to the thingspeak
 IOT service which this app access through an API to download the data.
