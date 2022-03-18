@@ -27,7 +27,7 @@ namespace BlazorApp.Api
 
         [FunctionName("GetMostRecent")]
         public async Task<IActionResult> MostRecentData(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest request)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest request)
         {
             string requestPrimary = $"/channels/{_config.GetValue<string>("PrimaryChannel")}/feeds/last.json?api_key={_config.GetValue<string>("PrimaryReadKey")}";
             string requestSecondary = $"/channels/{_config.GetValue<string>("SecondaryChannel")}/feeds/last.json?api_key={_config.GetValue<string>("SecondaryReadKey")}";
@@ -73,7 +73,7 @@ namespace BlazorApp.Api
 
         [FunctionName("GetDailyData")]
         public async Task<IActionResult> DailyData(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest request)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest request)
         {
             string requestPrimary = $"/channels/{_config.GetValue<string>("PrimaryChannel")}/feeds.json?api_key={_config.GetValue<string>("PrimaryReadKey")}&start={DateTime.UtcNow.Date:yyyy-MM-dd'%20'HH:mm:ss}";
             string requestSecondary = $"/channels/{_config.GetValue<string>("SecondaryChannel")}/feeds.json?api_key={_config.GetValue<string>("SecondaryReadKey")}&start={DateTime.UtcNow.Date:yyyy-MM-dd'%20'HH:mm:ss}";
