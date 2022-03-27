@@ -1,0 +1,46 @@
+﻿<div style="width: 200px">
+    <h4>@CardTitle</h4>
+    <h2>@CardValue</h2>
+</div>
+
+@code {
+    public string CardTitle
+    {
+        get
+        {
+            switch (CardType)
+            {
+                case DashboardCardType.Temp:
+                    return "Temperature";
+                    break;
+                case DashboardCardType.Humidity:
+                    return "Humidity";
+                    break;
+                case DashboardCardType.Dew:
+                    return "Dew Point";
+                    break;
+                case DashboardCardType.Press:
+                    return "Pressure";
+                    break;
+                case DashboardCardType.Rain:
+                    return "Rainfall";
+                    break;
+                case DashboardCardType.Wind:
+                    return "Wind"
+                    break;
+                default:
+                    return "Error";
+                    break;
+            }
+        }
+    }
+
+    [Parameter]
+    public float CardValue { get; set; }
+
+    [Parameter]
+    public DashboardCardType CardType { get; set; }
+
+    [Parameter]
+    public bool ImperialUnits { get; set; }
+}

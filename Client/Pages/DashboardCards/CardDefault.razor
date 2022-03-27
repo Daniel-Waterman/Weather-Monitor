@@ -1,0 +1,56 @@
+﻿@using BlazorApp.Shared;
+@using static BlazorApp.Client.SiteFunctions; //This contains the conversion functions and GetDisplayFloat function
+
+<div style="width: 200px">
+    @switch(CardType)
+    {
+        case DashboardCardType.Temp:
+            <h3>Temperature</h3>
+            if (ImperialUnits)
+            {
+                <h2>@GetDisplayFloat(celsiusToFahrenheit(CardValue), 1) °F</h2>
+            }
+            else
+            {
+                <h2>@GetDisplayFloat(CardValue, 1) °C</h2>
+            }
+            break;
+        case DashboardCardType.Humidity:
+            <h3>Humidity</h3>
+            <h2>@GetDisplayFloat(CardValue, 0) %</h2>
+            break;
+        case DashboardCardType.Dew:
+            <h3>Dew Point</h3>
+            if (ImperialUnits)
+            {
+                <h2>@GetDisplayFloat(celsiusToFahrenheit(CardValue), 1) °F</h2>
+            }
+            else
+            {
+                <h2>@GetDisplayFloat(CardValue, 1) °C</h2>
+            }
+            break;
+        case DashboardCardType.Press:
+            <h3>Pressure</h3>
+            if (ImperialUnits)
+            {
+                <h2>@GetDisplayFloat(hPaToInHg(CardValue), 2) inHg</h2>
+            }
+            else
+            {
+                <h2>@GetDisplayFloat(CardValue, 1) hPa</h2>
+            }
+            break;
+    }
+</div>
+
+@code {
+    [Parameter]
+    public float CardValue { get; set; }
+
+    [Parameter]
+    public DashboardCardType CardType { get; set; }
+
+    [Parameter]
+    public bool ImperialUnits { get; set; }
+}

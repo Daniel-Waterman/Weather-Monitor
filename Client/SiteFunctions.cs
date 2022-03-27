@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BlazorApp.Shared
+﻿namespace BlazorApp.Client
 {
-    public static class UnitConversions
+    public static class SiteFunctions
     {
         public static float celsiusToFahrenheit(float temperatureC)
         {
@@ -34,6 +30,18 @@ namespace BlazorApp.Shared
         public static float hPaToInHg(float pressureHpa)
         {
             throw new NotImplementedException();
+        }
+
+        public static string GetDisplayFloat(float value, int decimalPlaces)
+        {
+            if (value == -99 || value == 2000) // Default values
+            {
+                return "Err";
+            }
+            else
+            {
+                return Math.Round(value, decimalPlaces).ToString();
+            }
         }
     }
 }
