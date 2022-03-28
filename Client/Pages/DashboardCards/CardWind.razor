@@ -1,45 +1,64 @@
-﻿<div style="width: 200px">
-    <h4>@CardTitle</h4>
-    <h2>@CardValue</h2>
-</div>
+﻿@using BlazorApp.Shared;
+@using static BlazorApp.Client.SiteFunctions; <!--This contains the conversion functions and GetDisplayFloat function-->
 
-@code {
-    public string CardTitle
-    {
-        get
+<div class="border border-secondary border-2 p-2">
+    <div class="hstack gap-2">
+        <h4><i class="fa-solid fa-wind" aria-hidden="true"/> Wind</h4>
+        @if(Speed < 2)
         {
-            switch (CardType)
-            {
-                case DashboardCardType.Temp:
-                    return "Temperature";
-                    break;
-                case DashboardCardType.Humidity:
-                    return "Humidity";
-                    break;
-                case DashboardCardType.Dew:
-                    return "Dew Point";
-                    break;
-                case DashboardCardType.Press:
-                    return "Pressure";
-                    break;
-                case DashboardCardType.Rain:
-                    return "Rainfall";
-                    break;
-                case DashboardCardType.Wind:
-                    return "Wind"
-                    break;
-                default:
-                    return "Error";
-                    break;
-            }
+            <h3 class="ms-auto">--</h3>
+        }
+        else
+        {
+            <h3 class="ms-auto me-4">@GetWindDirectionString(Direction)</h3>
+        }
+    </div>
+
+    @if(Speed < 2)
+    {
+        <h3>Calm</h3>
+        <h5>Gusting: --</h5>
+    }
+    else
+    {
+        @if (ImperialUnits)
+        {
+            <h3>@GetDisplayFloat(kmhToMph(Speed), 1) mph</h3>
+            <h5>Gusting: @GetDisplayFloat(kmhToMph(GustSpeed), 1) mph</h5>
+        }
+        else
+        {
+            <h3>@GetDisplayFloat(Speed, 1) kph</h3>
+            <h5>Gusting: @GetDisplayFloat(GustSpeed, 1) kph</h5>
         }
     }
 
+    @if (ImperialUnits)
+    {
+        <h6 class="border-top border-secondary pt-2">Max Gust: @GetDisplayFloat(kmhToMph(MaxGustSpeed), 1) mph at @MaxGustTime.ToString("HH:mm")</h6>
+    }
+    else
+    {
+        <h6 class="border-top border-secondary pt-2">Max Gust: @GetDisplayFloat(MaxGustSpeed, 1) kph at @MaxGustTime.ToString("HH:mm")</h6>
+    }
+
+</div>
+
+@code {
     [Parameter]
-    public float CardValue { get; set; }
+    public int Direction { get; set; }
 
     [Parameter]
-    public DashboardCardType CardType { get; set; }
+    public float Speed { get; set; }
+
+    [Parameter]
+    public float GustSpeed { get; set; }
+
+    [Parameter]
+    public float MaxGustSpeed { get; set; }
+
+    [Parameter]
+    public DateTime MaxGustTime { get; set; }
 
     [Parameter]
     public bool ImperialUnits { get; set; }

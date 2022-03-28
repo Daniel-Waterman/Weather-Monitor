@@ -1,45 +1,62 @@
-﻿<div style="width: 200px">
-    <h4>@CardTitle</h4>
-    <h2>@CardValue</h2>
+﻿@using BlazorApp.Shared;
+@using static BlazorApp.Client.SiteFunctions; <!--This contains the conversion functions and GetDisplayFloat function-->
+
+<div class="border border-secondary border-2 p-2">
+    <h4><i class="fa-solid fa-cloud-rain" aria-hidden="true"/> Rain</h4>
+    <div class="hstack gap-2">
+        <h5>Last Hour: </h5>
+        @if (ImperialUnits)
+        {
+            <h3>@GetDisplayFloat(mmToInch(HourRain), 1) in</h3>
+        }
+        else
+        {
+            <h3>@GetDisplayFloat(HourRain, 1) mm</h3>
+        }
+    </div>
+    @if (ImperialUnits)
+    {
+        <h5 class="border-bottom border-secondary pt-2">Rain Rate: @GetDisplayFloat(mmToInch(RainRate), 1) in/hr</h5>
+        <h6>Daily Total: @GetDisplayFloat(mmToInch(DailyRain), 1) in</h6>
+        @if(MaxRainRate > 0)
+        {
+            <h6>Max Rain Rate: @GetDisplayFloat(mmToInch(MaxRainRate), 1) in/hr at @MaxRateTime.ToString("HH:mm")</h6>
+        }
+        else
+        {
+            <h6>Max Rain Rate: 0 in/hr at --:--</h6>
+        }
+    }
+    else
+    {
+        <h5 class="border-bottom border-secondary pt-2">Rain Rate: @GetDisplayFloat(RainRate, 1) mm/hr</h5>
+        <h6>Daily Total: @GetDisplayFloat(DailyRain, 1) mm</h6>
+        @if(MaxRainRate > 0)
+        {
+            <h6>Max Rain Rate: @GetDisplayFloat(MaxRainRate, 1) mm/hr at @MaxRateTime.ToString("HH:mm")</h6>
+        }
+        else
+        {
+            <h6>Max Rain Rate: 0 mm/hr at --:--</h6>
+        }
+    }
 </div>
 
 @code {
-    public string CardTitle
-    {
-        get
-        {
-            switch (CardType)
-            {
-                case DashboardCardType.Temp:
-                    return "Temperature";
-                    break;
-                case DashboardCardType.Humidity:
-                    return "Humidity";
-                    break;
-                case DashboardCardType.Dew:
-                    return "Dew Point";
-                    break;
-                case DashboardCardType.Press:
-                    return "Pressure";
-                    break;
-                case DashboardCardType.Rain:
-                    return "Rainfall";
-                    break;
-                case DashboardCardType.Wind:
-                    return "Wind"
-                    break;
-                default:
-                    return "Error";
-                    break;
-            }
-        }
-    }
+    [Parameter]
+    public float HourRain { get; set; }
 
     [Parameter]
-    public float CardValue { get; set; }
+    public float DailyRain { get; set; }
 
     [Parameter]
-    public DashboardCardType CardType { get; set; }
+    public float RainRate { get; set; }
+
+    [Parameter]
+    public float MaxRainRate { get; set; }
+
+    [Parameter]
+    public DateTime MaxRateTime { get; set; }
 
     [Parameter]
     public bool ImperialUnits { get; set; }
