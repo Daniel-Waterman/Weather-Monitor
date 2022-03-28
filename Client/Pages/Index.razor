@@ -1,138 +1,79 @@
 ﻿@page "/"
 @using System
 @using BlazorApp.Shared
+@using BlazorApp.Client.Pages.DashboardCards;
 @inject HttpClient _client
 
 <PageTitle>SS6 Weather</PageTitle>
 
 <h2>Current Conditions Dashboard</h2>
 
-<h6>Update Time: @updateTime</h6>
+<h6>Update Time: @updateTime UTC</h6>
 
 <div class="container-fluid">
     @if (weatherData != null)
     {
-        <div class="row row-colour-one">
-            <div class="col"/>
-            <div class="col">
-                <b>Live Conditions</b>
+        <div class="row">
+            <div class="col-6 col-md-4 col-xl-3">
+                <CardDefault CardType="DashboardCardType.Temp"
+                    CardValue="@weatherData.Temperature"
+                    CardMinValue="@extremeRecords.TemperatureMaxMin.MinValue"
+                    CardMinTime="@extremeRecords.TemperatureMaxMin.MinValueTime"
+                    CardMaxValue="@extremeRecords.TemperatureMaxMin.MaxValue"
+                    CardMaxTime="@extremeRecords.TemperatureMaxMin.MaxValueTime"
+                    ImperialUnits="false"/>
             </div>
-            <div class="col">
-                <b>Extremes (Since 00:00 today)</b>
+            <div class="col-6 col-md-4 col-xl-3">
+                <CardDefault CardType="DashboardCardType.Humidity"
+                    CardValue="@weatherData.Humidity"
+                    CardMinValue="@extremeRecords.HumidityMaxMin.MinValue"
+                    CardMinTime="@extremeRecords.HumidityMaxMin.MinValueTime"
+                    CardMaxValue="@extremeRecords.HumidityMaxMin.MaxValue"
+                    CardMaxTime="@extremeRecords.HumidityMaxMin.MaxValueTime"
+                    ImperialUnits="false"/>
             </div>
-        </div>
-        <div class="row row-colour-two">
-            <div class="col">
-                <i class="fa-solid fa-temperature-half" aria-hidden="true"/>
-                Temperature    
+            <div class="col-6 col-md-4 col-xl-3">
+                <CardDefault CardType="DashboardCardType.Press"
+                    CardValue="@weatherData.SeaLevelPressure"
+                    CardMinValue="@extremeRecords.PressureMaxMin.MinValue"
+                    CardMinTime="@extremeRecords.PressureMaxMin.MinValueTime"
+                    CardMaxValue="@extremeRecords.PressureMaxMin.MaxValue"
+                    CardMaxTime="@extremeRecords.PressureMaxMin.MaxValueTime"
+                    ImperialUnits="false"/>
             </div>
-            <div class="col">
-                @GetDisplayFloat(weatherData.Temperature, 1) °C
+            <div class="col-6 col-md-4 col-xl-3">
+                 <CardDefault CardType="DashboardCardType.Dew"
+                    CardValue="@weatherData.DewPoint"
+                    CardMinValue="@extremeRecords.DewPointMaxMin.MinValue"
+                    CardMinTime="@extremeRecords.DewPointMaxMin.MinValueTime"
+                    CardMaxValue="@extremeRecords.DewPointMaxMin.MaxValue"
+                    CardMaxTime="@extremeRecords.DewPointMaxMin.MaxValueTime"
+                    ImperialUnits="false"/>
             </div>
-            <div class="col">
-                <div>Min: @GetDisplayFloat(extremeRecords.TemperatureMaxMin.MinValue, 1) °C (@extremeRecords.TemperatureMaxMin.MinValueTime.ToShortTimeString())</div>
-                <div>Max: @GetDisplayFloat(extremeRecords.TemperatureMaxMin.MaxValue, 1) °C (@extremeRecords.TemperatureMaxMin.MaxValueTime.ToShortTimeString())</div>
+            <div class="col-6 col-md-4 col-xl-3">
+                <CardWind Direction="@weatherData.WindDirection"
+                    Speed="@weatherData.AvgWindSpeed"
+                    GustSpeed="@weatherData.GustWindSpeed"
+                    MaxGustSpeed="@extremeRecords.maxGustWind"
+                    MaxGustTime="@extremeRecords.maxGustWindTime"
+                    ImperialUnits="false"/>
             </div>
-        </div>
-        <div class="row row-colour-one">
-            <div class="col">
-                <i class="fa-solid fa-droplet" aria-hidden="true"/>
-                Humidity
-            </div>
-            <div class="col">
-                @GetDisplayFloat(weatherData.Humidity, 0) %
-            </div>
-            <div class="col">
-                <div>Min: @GetDisplayFloat(extremeRecords.HumidityMaxMin.MinValue, 0) % (@extremeRecords.HumidityMaxMin.MinValueTime.ToShortTimeString())</div>
-                <div>Max: @GetDisplayFloat(extremeRecords.HumidityMaxMin.MaxValue, 0) % (@extremeRecords.HumidityMaxMin.MaxValueTime.ToShortTimeString())</div>
-            </div>
-        </div>
-        <div class="row row-colour-two">
-            <div class="col">
-                <i class="fa-solid fa-droplet" aria-hidden="true"/>
-                Dew Point
-            </div>
-            <div class="col">
-                @GetDisplayFloat(weatherData.DewPoint, 1) °C
-            </div>
-            <div class="col">
-                <div>Min: @GetDisplayFloat(extremeRecords.DewPointMaxMin.MinValue, 1) °C (@extremeRecords.DewPointMaxMin.MinValueTime.ToShortTimeString())</div>
-                <div>Max: @GetDisplayFloat(extremeRecords.DewPointMaxMin.MaxValue, 1) °C (@extremeRecords.DewPointMaxMin.MaxValueTime.ToShortTimeString())</div>
-            </div>
-        </div>
-        <div class="row row-colour-one">
-            <div class="col">
-                <i class="fa-solid fa-gauge-simple" aria-hidden="true"/>
-                Pressure
-            </div>
-            <div class="col">
-                <div>@GetDisplayFloat(weatherData.SeaLevelPressure, 1) hPa</div>
-                <div><small>(Station Pressure: @GetDisplayFloat(weatherData.StationPressure, 1) hPa)</small></div>
-            </div>
-            <div class="col">
-                <div>Min: @GetDisplayFloat(extremeRecords.PressureMaxMin.MinValue, 1) hPa (@extremeRecords.PressureMaxMin.MinValueTime.ToShortTimeString())</div>
-                <div>Max: @GetDisplayFloat(extremeRecords.PressureMaxMin.MaxValue, 1) hPa (@extremeRecords.PressureMaxMin.MaxValueTime.ToShortTimeString())</div>
+            <div class="col-6 col-md-4 col-xl-3">
+                <CardRain HourRain="@weatherData.RainfallTotal"
+                    DailyRain="0"
+                    RainRate="@weatherData.RainfallRate"
+                    MaxRainRate="@extremeRecords.maxRainRate"
+                    MaxRateTime="@extremeRecords.maxRainRateTime"
+                    ImperialUnits="false"/>
             </div>
         </div>
-        <div class="row row-colour-two">
-            <div class="col">
-                <i class="fa-solid fa-wind" aria-hidden="true"/>
-                Wind
-            </div>
-            <div class="col">
-                <div class="hstack">
-                    <div class="w-50">Minute Average</div>
-                    <div>@GetDisplayFloat(weatherData.AvgWindSpeed, 1) kph</div>
-                </div>
-                <div class="hstack">
-                    <div class="w-50">Gusting To</div>
-                    <div>@GetDisplayFloat(weatherData.GustWindSpeed, 1) kph</div>
-                </div>
-                <div class="hstack">
-                    <div class="w-50">Direction</div>
-                    <div>@weatherData.WindDirection °</div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="hstack">
-                    <div class="w-50">Max Minute Average</div>
-                    <div>@GetDisplayFloat(extremeRecords.maxAvgWind, 1) kph (@extremeRecords.maxAvgWindTime.ToShortTimeString())</div>
-                </div>
-                <div class="hstack">
-                    <div class="w-50">Max Gust Speed</div>
-                    <div>@GetDisplayFloat(extremeRecords.maxGustWind, 1) kph (@extremeRecords.maxGustWindTime.ToShortTimeString())</div>
-                </div>
-            </div>
-        </div> 
-        <div class="row row-colour-one">
-            <div class="col">
-                <i class="fa-solid fa-cloud-rain" aria-hidden="true"/>
-                Rain
-            </div>
-            <div class="col">
-                <div class="hstack">
-                    <div class="w-50">Last Hour</div>
-                    <div>@GetDisplayFloat(weatherData.RainfallTotal, 1) mm</div>
-                </div>
-                <div class="hstack">
-                    <div class="w-50">Rain Rate</div>
-                    <div>@GetDisplayFloat(weatherData.RainfallRate, 1) mm/hr</div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="hstack">
-                    <div class="w-50">Max Rain Rate</div>
-                    @if (@extremeRecords.maxRainRate == 0)
-                    {
-                        <div>0 mm/hr (N/A)</div>
-                    }
-                    else
-                    {
-                        <div>@GetDisplayFloat(extremeRecords.maxRainRate, 1) mm/hr (@extremeRecords.maxRainRateTime.ToShortTimeString())</div>
-                    }
-                </div>
-            </div>
-        </div>
+        
+        
+        
+
+        
+
+       
     }
     else
     {
@@ -183,18 +124,6 @@
             StateHasChanged();
         }
         catch (Exception ex) { } 
-    }
-
-    private string GetDisplayFloat(float value, int decimalPlaces)
-    {
-        if (value == -99 || value == 2000) // Default values
-        {
-            return "No Data";
-        }
-        else
-        {
-            return Math.Round(value, decimalPlaces).ToString();
-        }
     }
 }
 
