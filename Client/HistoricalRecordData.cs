@@ -99,6 +99,7 @@ namespace BlazorApp.Client
 
     public struct ExtremeRecord
     {
+        public ExtremeRecord() { }
         public float MinValue { get; set; } = 2000;
         public float MaxValue { get; set; } = -99;
         public DateTime MinValueTime { get; set; } = DateTime.MinValue;
