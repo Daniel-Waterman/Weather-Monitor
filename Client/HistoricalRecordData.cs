@@ -101,7 +101,7 @@ namespace BlazorApp.Client
     {
         public float MinValue { get; set; } = 2000;
         public float MaxValue { get; set; } = -99;
-        public DateTime MinValueTime { get; set; }
-        public DateTime MaxValueTime { get; set; }
+        public DateTime MinValueTime { get; set; } = DateTime.MinValue;
+        public DateTime MaxValueTime { get; set; } = DateTime.MinValue;
     }
 }
