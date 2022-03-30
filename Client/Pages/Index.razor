@@ -60,19 +60,13 @@
             </div>
             <div class="col-6 col-md-4 col-xl-3">
                 <CardRain HourRain="@weatherData.RainfallTotal"
-                    DailyRain="0"
+                    DailyRain="@dailyRainTotal"
                     RainRate="@weatherData.RainfallRate"
                     MaxRainRate="@extremeRecords.maxRainRate"
                     MaxRateTime="@extremeRecords.maxRainRateTime"
                     ImperialUnits="false"/>
             </div>
         </div>
-        
-        
-        
-
-        
-
        
     }
     else
@@ -87,6 +81,7 @@
     private WeatherRecord? weatherData;
     private List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
     private HistoricalRecordData extremeRecords = new HistoricalRecordData();
+    private float dailyRainTotal = 0;
     private string updateTime => weatherData?.RecordTime.ToString("dd/MM/yyyy HH:mm") ?? "Not Found";
 
     protected override async Task OnInitializedAsync()
@@ -112,14 +107,16 @@
             // Work out total rain in last hour, as total rain for previous minute is not helpful
             weatherData.RainfallTotal = 0; //Zero out total for last minute, so to add total for last hour below
             DateTime previousHourStart = DateTime.UtcNow.AddHours(-1);
-            int index = 0;
-            while (index < weatherRecords.Count && weatherRecords[index].RecordTime >= previousHourStart)
+            foreach (var weatherRecord in weatherRecords)
             {
-                if (weatherRecords[index].RainfallTotal != -99)
+                if (weatherRecord.RainfallTotal != 99)
                 {
-                    weatherData.RainfallTotal += weatherRecords[index].RainfallTotal;
+                    dailyRainTotal += weatherRecord.RainfallTotal;
+                    if (weatherRecord.RecordTime >= previousHourStart)
+                    {
+                        weatherData.RainfallTotal += weatherRecord.RainfallTotal;
+                    }
                 }
-                index++;
             }
             StateHasChanged();
         }

@@ -16,8 +16,8 @@
     </div>
     @if (ImperialUnits)
     {
-        <h5 class="border-bottom border-secondary pt-2">Rain Rate: @GetDisplayFloat(mmToInch(RainRate), 1) in/hr</h5>
-        <h6>Daily Total: @GetDisplayFloat(mmToInch(DailyRain), 1) in</h6>
+        <h5>Rain Rate: @GetDisplayFloat(mmToInch(RainRate), 1) in/hr</h5>
+        <h6 class="border-top border-secondary pt-2">Daily Total: @GetDisplayFloat(mmToInch(DailyRain), 1) in</h6>
         @if(MaxRainRate > 0)
         {
             <h6>Max Rain Rate: @GetDisplayFloat(mmToInch(MaxRainRate), 1) in/hr at @MaxRateTime.ToString("HH:mm")</h6>
@@ -29,8 +29,8 @@
     }
     else
     {
-        <h5 class="border-bottom border-secondary pt-2">Rain Rate: @GetDisplayFloat(RainRate, 1) mm/hr</h5>
-        <h6>Daily Total: @GetDisplayFloat(DailyRain, 1) mm</h6>
+        <h5>Rain Rate: @GetDisplayFloat(RainRate, 1) mm/hr</h5>
+        <h6 class="border-top border-secondary pt-2">Daily Total: @GetDisplayFloat(DailyRain, 1) mm</h6>
         @if(MaxRainRate > 0)
         {
             <h6>Max Rain Rate: @GetDisplayFloat(MaxRainRate, 1) mm/hr at @MaxRateTime.ToString("HH:mm")</h6>
