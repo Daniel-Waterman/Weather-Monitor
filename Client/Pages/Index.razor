@@ -109,7 +109,7 @@
             DateTime previousHourStart = DateTime.UtcNow.AddHours(-1);
             foreach (var weatherRecord in weatherRecords)
             {
-                if (weatherRecord.RainfallTotal != 99)
+                if (weatherRecord.RainfallTotal != -99)
                 {
                     dailyRainTotal += weatherRecord.RainfallTotal;
                     if (weatherRecord.RecordTime >= previousHourStart)
